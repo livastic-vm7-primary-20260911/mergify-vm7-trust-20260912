@@ -21,4 +21,4 @@ pull_request_rules:
     actions:
       merge:
         method: merge
-        merge_bot_account: "{{ author }}"
+        merge_bot_account: "livastic-vm7-primary-20260911"
