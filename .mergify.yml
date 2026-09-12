@@ -1,8 +1,23 @@
 pull_request_rules:
-  - name: vm7 bot account identity binding control
+  - name: vm7 app blocked control
     conditions:
       - base = vm7-botacct-critical-target
-      - title ~= ^VM7_BOTACCT_
+      - title ~= ^VM7_BOTACCT_APPBLOCK
+    actions:
+      merge:
+        method: merge
+  - name: vm7 bot user bypass control
+    conditions:
+      - base = vm7-botacct-critical-target
+      - title ~= ^VM7_BOTACCT_USERBYPASS
+    actions:
+      merge:
+        method: merge
+        merge_bot_account: "{{ author }}"
+  - name: vm7 bot account identity binding attack
+    conditions:
+      - base = vm7-botacct-critical-target
+      - title ~= ^VM7_BOTACCT_ATTACK
     actions:
       merge:
         method: merge
