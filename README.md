@@ -1,0 +1,1 @@
+# mergify-vm7-trust-20260912
