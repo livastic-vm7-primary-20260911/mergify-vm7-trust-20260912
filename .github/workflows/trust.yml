@@ -1,0 +1,21 @@
+name: trust-boundary
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      VM7_CANARY: ${{ secrets.VM7_CANARY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Run PR-controlled probe
+        shell: bash
+        run: bash ci.sh
