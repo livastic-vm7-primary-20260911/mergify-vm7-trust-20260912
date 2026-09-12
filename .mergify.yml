@@ -1,9 +1,10 @@
 queue_rules:
   - name: default
 
-commands_restrictions:
-  queue:
+pull_request_rules:
+  - name: auto queue external fork PRs
     conditions:
-      - and:
-          - sender = {{author}}
-          - from-fork
+      - from-fork
+    actions:
+      queue:
+        name: default
