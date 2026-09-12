@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VM7_CANARY: ${{ secrets.VM7_CANARY }}
+      MERGIFY_TOKEN: ${{ secrets.MERGIFY_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
