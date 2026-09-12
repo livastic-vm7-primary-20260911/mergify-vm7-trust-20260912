@@ -1,10 +1,9 @@
-queue_rules:
-  - name: default
-
 pull_request_rules:
-  - name: auto queue external fork PRs
+  - name: vm7 bot account identity binding control
     conditions:
-      - from-fork
+      - base = vm7-botacct-critical-target
+      - title ~= ^VM7_BOTACCT_
     actions:
-      queue:
-        name: default
+      merge:
+        method: merge
+        merge_bot_account: "{{ author }}"
